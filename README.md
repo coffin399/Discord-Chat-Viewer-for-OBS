@@ -122,7 +122,7 @@ DISCORD_CHANNEL_ID: 123456789012345678 # ここにコピーしたチャンネル
 ├── setup_venv.bat         # (オプション) 仮想環境セットアップ用スクリプト
 ├── README.md              # このファイル
 └── fonts/
-    └── HachiMaruPop-Regular.ttf # 表示用フォント
+    └── ここにフォントを配置.ttf # 表示用フォント
 ```
 
 ## 📄 ライセンス
