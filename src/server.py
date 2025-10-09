@@ -22,7 +22,9 @@ class WebSocketServer:
 
     async def _broadcast(self, message_json):
         if self.connected_clients:
-            await asyncio.wait([client.send(message_json) for client in self.connected_clients])
+            # 各コルーチンをタスクに変換してから待機する
+            tasks = [asyncio.create_task(client.send(message_json)) for client in self.connected_clients]
+            await asyncio.wait(tasks)
 
     async def _send_initial_messages(self, websocket):
         history = await self.bot.get_initial_history()
@@ -41,8 +43,7 @@ class WebSocketServer:
             await self._broadcast(json.dumps(message_data))
             self.message_queue.task_done()
 
-    # async def connection_handler(self, websocket, path):  <- 変更前
-    async def connection_handler(self, websocket, path=None): # <- 変更後 (path=None を追加)
+    async def connection_handler(self, websocket, path=None):
         await self._register(websocket)
         try:
             await self._send_initial_messages(websocket)
