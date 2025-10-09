@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Chat Viewer</title>
+  <style>
+    :root {
+      /* デフォルトフォント (カスタムフォントがない場合に適用される) */
+      --chat-font: 'Yu Gothic', 'Meiryo', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--chat-font);
+      background-color: #cceeff; /* 空色パステル */
+      background-image:
+        radial-gradient(#ffffff 10%, transparent 11%),
+        radial-gradient(#ffffff 10%, transparent 11%);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px; /* 水玉模様 */
+    }
+
+    #chat {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .message .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .message-content {
+      background: #ffe6f2;
+      border: 3px solid #ffb6c1;
+      border-radius: 25px;
+      padding: 12px 16px;
+      color: #ff69b4;
+      font-family: var(--chat-font);
+      margin-left: 8px;
+      max-width: 70%;
+      margin-right: auto;
+      position: relative;
+      margin-bottom: 0;
+      box-shadow:
+        0 0 15px rgba(255,182,193,0.6),
+        0 0 30px rgba(255,182,193,0.4),
+        0 0 45px rgba(255,182,193,0.2);
+    }
+
+    .message-content::after {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: -10px;
+      border-width: 15px 15px 0;
+      border-style: solid;
+      border-color: #ffe6f2 transparent transparent transparent;
+      filter: drop-shadow(0 -2px 2px rgba(255,182,193,0.4));
+    }
+
+    .author {
+      font-family: sans-serif;
+      font-weight: bold;
+      color: black;
+      margin-right: 6px;
+    }
+
+    .text {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .attachment-img, .embed-img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin-top: 6px;
+      border-radius: 10px;
+    }
+
+    .attachment-video, .embed-video {
+      max-width: 100%;
+      display: block;
+      margin-top: 6px;
+      border-radius: 10px;
+    }
+
+    .attachment-link {
+      display: block;
+      margin-top: 6px;
+      color: #ff69b4;
+      text-decoration: underline;
+      word-break: break-all;
+    }
+
+    .embed {
+      border: 2px dashed #ffb6c1;
+      border-radius: 12px;
+      padding: 8px;
+      margin-top: 8px;
+      background: #fff0f6;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .embed-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .embed-description {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat"></div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const socket = new WebSocket("ws://localhost:8765");
+
+    socket.onmessage = event => {
+      const data = JSON.parse(event.data);
+
+      if (data.type === "init") {
+        loadCustomFonts(data.fonts);
+        chat.innerHTML = "";
+        data.messages.forEach(renderMessage);
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      if (data.type === "new") {
+        renderMessage(data.message);
+        chat.scrollTop = chat.scrollHeight;
+      }
+    };
+
+    socket.onopen = () => { console.log("WebSocket connected!"); };
+    socket.onerror = (error) => { console.error("WebSocket Error: ", error); };
+    socket.onclose = () => {
+        console.log("WebSocket disconnected. Trying to reconnect...");
+        setTimeout(() => { window.location.reload(); }, 3000);
+    };
+
+    function loadCustomFonts(fontFiles) {
+      if (!fontFiles || fontFiles.length === 0) {
+        console.log("カスタムフォントが見つかりませんでした。デフォルトフォントを使用します。");
+        return;
+      }
+
+      const styleSheet = document.createElement("style");
+      let fontFaceRules = "";
+
+      fontFiles.forEach(file => {
+        const fontName = file.split('.').slice(0, -1).join('.');
+        fontFaceRules += `
+          @font-face {
+            font-family: '${fontName}';
+            src: url('./fonts/${file}');
+          }
+        `;
+      });
+
+      styleSheet.textContent = fontFaceRules;
+      document.head.appendChild(styleSheet);
+
+      const primaryFontName = fontFiles[0].split('.').slice(0, -1).join('.');
+      document.documentElement.style.setProperty('--chat-font', `'${primaryFontName}'`);
+      console.log(`カスタムフォント '${primaryFontName}' を適用しました。`);
+    }
+
+    function getFileExtension(url) {
+      try {
+        const cleanUrl = url.split("?")[0];
+        return cleanUrl.split(".").pop().toLowerCase();
+      } catch {
+        return "";
+      }
+    }
+
+    function renderMessage(m) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message";
+
+      const avatar = document.createElement("img");
+      avatar.src = m.avatar;
+      avatar.className = "avatar";
+      msgDiv.appendChild(avatar);
+
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "message-content";
+
+      const header = document.createElement("div");
+      const author = document.createElement("span");
+      author.className = "author";
+      author.textContent = m.author;
+      header.appendChild(author);
+
+      const text = document.createElement("span");
+      text.className = "text";
+      text.textContent = m.content;
+      header.appendChild(text);
+
+      contentDiv.appendChild(header);
+
+      if (m.attachments && m.attachments.length > 0) {
+        m.attachments.forEach(url => {
+          const ext = getFileExtension(url);
+          if (["jpg","jpeg","png","gif","webp","avif"].includes(ext)) {
+            const img = document.createElement("img");
+            img.src = url;
+            img.className = "attachment-img";
+            contentDiv.appendChild(img);
+          } else if (["mp4","webm"].includes(ext)) {
+            const video = document.createElement("video");
+            video.src = url;
+            video.controls = true;
+            video.className = "attachment-video";
+            contentDiv.appendChild(video);
+          } else {
+            const link = document.createElement("a");
+            link.href = url;
+            link.textContent = url;
+            link.target = "_blank";
+            link.className = "attachment-link";
+            contentDiv.appendChild(link);
+          }
+        });
+      }
+
+      if (m.embeds && m.embeds.length > 0) {
+        m.embeds.forEach(e => {
+          if (!e.title && !e.description && !e.image && !e.video) return;
+          const embedDiv = document.createElement("div");
+          embedDiv.className = "embed";
+          if (e.title) {
+            const title = document.createElement("div");
+            title.className = "embed-title";
+            title.textContent = e.title;
+            embedDiv.appendChild(title);
+          }
+          if (e.description) {
+            const desc = document.createElement("div");
+            desc.className = "embed-description";
+            desc.textContent = e.description;
+            embedDiv.appendChild(desc);
+          }
+          if (e.image) {
+            const img = document.createElement("img");
+            img.src = e.image;
+            img.className = "embed-img";
+            embedDiv.appendChild(img);
+          }
+          if (e.video) {
+            const video = document.createElement("video");
+            video.src = e.video;
+            video.controls = true;
+            video.className = "embed-video";
+            embedDiv.appendChild(video);
+          }
+          contentDiv.appendChild(embedDiv);
+        });
+      }
+
+      msgDiv.appendChild(contentDiv);
+      chat.appendChild(msgDiv);
+    }
+  </script>
+</body>
+</html>

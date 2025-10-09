@@ -1,0 +1,22 @@
+# --- Discord Bot Settings ---
+# Discord Developer Portal (https://discord.com/developers/applications) で取得したBotのトークン
+# 必ずダブルクォーテーション "" で囲んでください。
+DISCORD_BOT_TOKEN: "ここにあなたのBotのトークンを貼り付け"
+
+# --- Channel Settings ---
+# OBSに表示したいDiscordチャンネルIDのリスト
+# 起動時に監視したいチャンネルがなければ、このリストを空にしてください (例: WATCH_CHANNELS: [])
+# チャンネルIDは、Discordの開発者モードを有効にして、チャンネル名を右クリック→「IDをコピー」で取得できます。
+WATCH_CHANNELS:
+  - 1029288953808945187 # 例1: メインの雑談チャンネルID
+  - 1029288953808945187 # 例2: ゲーム配信用チャンネルID
+
+# --- WebSocket Server Settings ---
+# OBSのブラウザソースが接続するサーバーの設定です。
+# 通常はこのままで問題ありません。
+WEBSOCKET_HOST: "localhost"
+WEBSOCKET_PORT: 8765
+
+# --- Display Settings ---
+# 起動時に表示する過去のメッセージ件数
+HISTORY_LIMIT: 20
