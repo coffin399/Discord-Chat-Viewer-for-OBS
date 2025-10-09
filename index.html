@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Discord Chat Viewer</title>
+  <style id="custom-fonts"></style>
   <style>
     :root {
-      --chat-font: 'Yu Gothic', 'Meiryo', sans-serif;
+      --chat-font: 'CustomFont', 'Yu Gothic', 'Meiryo', 'MS Gothic', sans-serif;
     }
 
     body {
@@ -74,7 +75,7 @@
     }
 
     .author {
-      font-family: sans-serif;
+      font-family: var(--chat-font);
       font-weight: bold;
       color: black;
       margin-right: 6px;
@@ -150,6 +151,7 @@
   <script>
     const chat = document.getElementById("chat");
     const statusDiv = document.getElementById("status");
+    const customFontsStyle = document.getElementById("custom-fonts");
     let socket = null;
     let reconnectInterval = 1000;
     const maxReconnectInterval = 30000;
@@ -169,6 +171,40 @@
       statusDiv.textContent = message;
       statusDiv.style.color = color;
       console.log('Status:', message);
+    }
+
+    function loadCustomFonts(fontFiles) {
+      if (!fontFiles || fontFiles.length === 0) {
+        console.log('📝 カスタムフォントなし。デフォルトフォントを使用します');
+        return;
+      }
+
+      let fontFaceRules = '';
+      fontFiles.forEach((font, index) => {
+        const fontName = font.name || `CustomFont${index}`;
+        const format = font.format || 'truetype';
+
+        fontFaceRules += `
+          @font-face {
+            font-family: '${fontName}';
+            src: url(data:${font.mime};base64,${font.data}) format('${format}');
+            font-weight: normal;
+            font-style: normal;
+          }
+        `;
+
+        console.log(`✅ フォント登録: ${fontName}`);
+      });
+
+      customFontsStyle.textContent = fontFaceRules;
+
+      // 最初のフォントをメインフォントとして設定
+      if (fontFiles.length > 0) {
+        const firstFont = fontFiles[0].name || 'CustomFont0';
+        document.documentElement.style.setProperty('--chat-font',
+          `'${firstFont}', 'Yu Gothic', 'Meiryo', 'MS Gothic', sans-serif`);
+        console.log(`✅ メインフォント設定: ${firstFont}`);
+      }
     }
 
     function connect() {
@@ -251,10 +287,101 @@
       }
     }
 
-    // 残りの関数は同じ...
-    function loadCustomFonts(fontFiles) { /* 省略 */ }
-    function getFileExtension(url) { /* 省略 */ }
-    function renderMessage(m) { /* 省略 */ }
+    function getFileExtension(url) {
+      if (!url) return '';
+      const pathname = new URL(url).pathname;
+      const ext = pathname.split('.').pop().toLowerCase();
+      return ext;
+    }
+
+    function renderMessage(m) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message';
+
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
+      avatar.src = m.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+      avatar.alt = m.author;
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+
+      const authorSpan = document.createElement('span');
+      authorSpan.className = 'author';
+      authorSpan.textContent = m.author;
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'text';
+      textSpan.textContent = m.content;
+
+      contentDiv.appendChild(authorSpan);
+      contentDiv.appendChild(textSpan);
+
+      // 添付ファイルの処理
+      if (m.attachments && m.attachments.length > 0) {
+        m.attachments.forEach(att => {
+          const ext = getFileExtension(att.url);
+          const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext);
+          const isVideo = ['mp4', 'webm', 'mov'].includes(ext);
+
+          if (isImage) {
+            const img = document.createElement('img');
+            img.className = 'attachment-img';
+            img.src = att.url;
+            img.alt = att.filename;
+            contentDiv.appendChild(img);
+          } else if (isVideo) {
+            const video = document.createElement('video');
+            video.className = 'attachment-video';
+            video.src = att.url;
+            video.controls = true;
+            contentDiv.appendChild(video);
+          } else {
+            const link = document.createElement('a');
+            link.className = 'attachment-link';
+            link.href = att.url;
+            link.target = '_blank';
+            link.textContent = `📎 ${att.filename}`;
+            contentDiv.appendChild(link);
+          }
+        });
+      }
+
+      // Embedsの処理
+      if (m.embeds && m.embeds.length > 0) {
+        m.embeds.forEach(embed => {
+          const embedDiv = document.createElement('div');
+          embedDiv.className = 'embed';
+
+          if (embed.title) {
+            const title = document.createElement('div');
+            title.className = 'embed-title';
+            title.textContent = embed.title;
+            embedDiv.appendChild(title);
+          }
+
+          if (embed.description) {
+            const desc = document.createElement('div');
+            desc.className = 'embed-description';
+            desc.textContent = embed.description;
+            embedDiv.appendChild(desc);
+          }
+
+          if (embed.image) {
+            const img = document.createElement('img');
+            img.className = 'embed-img';
+            img.src = embed.image;
+            embedDiv.appendChild(img);
+          }
+
+          contentDiv.appendChild(embedDiv);
+        });
+      }
+
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(contentDiv);
+      chat.appendChild(messageDiv);
+    }
 
     window.addEventListener('beforeunload', () => {
       isIntentionallyClosed = true;

@@ -1,8 +1,9 @@
 import asyncio
 import websockets
 import json
-from typing import Set
+from typing import Set, List
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +18,55 @@ class WebSocketServer:
         self.connected_clients: Set[websockets.WebSocketServerProtocol] = set()
         self.message_history = []
         self.max_messages = config['discord']['max_messages']
+        self.fonts = self._load_fonts()
 
-    async def handler(self, websocket, path):
+    def _load_fonts(self) -> List[dict]:
+        """fontフォルダからフォントファイルを読み込む"""
+        fonts = []
+        font_dir = Path("font")
+
+        if not font_dir.exists():
+            logger.info("📁 fontフォルダが見つかりません。Windowsデフォルトフォントを使用します")
+            return fonts
+
+        # サポートする拡張子
+        font_extensions = {'.ttf', '.otf', '.woff', '.woff2'}
+
+        for font_file in font_dir.iterdir():
+            if font_file.is_file() and font_file.suffix.lower() in font_extensions:
+                try:
+                    # Base64エンコード
+                    with open(font_file, 'rb') as f:
+                        import base64
+                        font_data = base64.b64encode(f.read()).decode('utf-8')
+
+                    # 拡張子に応じたMIMEタイプ
+                    mime_types = {
+                        '.ttf': 'font/ttf',
+                        '.otf': 'font/otf',
+                        '.woff': 'font/woff',
+                        '.woff2': 'font/woff2'
+                    }
+
+                    fonts.append({
+                        'name': font_file.stem,
+                        'data': font_data,
+                        'format': font_file.suffix[1:],  # '.ttf' -> 'ttf'
+                        'mime': mime_types.get(font_file.suffix.lower(), 'font/ttf')
+                    })
+
+                    logger.info(f"✅ フォント読み込み: {font_file.name}")
+                except Exception as e:
+                    logger.error(f"❌ フォント読み込みエラー ({font_file.name}): {e}")
+
+        if not fonts:
+            logger.info("📝 カスタムフォントが見つかりません。Windowsデフォルトフォントを使用します")
+        else:
+            logger.info(f"✅ {len(fonts)}個のカスタムフォントを読み込みました")
+
+        return fonts
+
+    async def handler(self, websocket):
         """WebSocket接続ハンドラー"""
         logger.info(f"🔌 WebSocketクライアント接続: {websocket.remote_address}")
         self.connected_clients.add(websocket)
@@ -28,7 +76,7 @@ class WebSocketServer:
             await websocket.send(json.dumps({
                 "type": "init",
                 "messages": self.message_history,
-                "fonts": []
+                "fonts": self.fonts
             }, ensure_ascii=False))
 
             # クライアントからのメッセージを待機(keepalive用)
