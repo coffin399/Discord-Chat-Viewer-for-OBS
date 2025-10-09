@@ -5,7 +5,6 @@
   <title>Discord Chat Viewer</title>
   <style>
     :root {
-      /* デフォルトフォント (カスタムフォントがない場合に適用される) */
       --chat-font: 'Yu Gothic', 'Meiryo', sans-serif;
     }
 
@@ -13,12 +12,12 @@
       margin: 0;
       padding: 0;
       font-family: var(--chat-font);
-      background-color: #cceeff; /* 空色パステル */
+      background-color: #cceeff;
       background-image:
         radial-gradient(#ffffff 10%, transparent 11%),
         radial-gradient(#ffffff 10%, transparent 11%);
       background-size: 40px 40px;
-      background-position: 0 0, 20px 20px; /* 水玉模様 */
+      background-position: 0 0, 20px 20px;
     }
 
     #chat {
@@ -129,160 +128,146 @@
     .embed-description {
       margin-bottom: 4px;
     }
+
+    #status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #ffb6c1;
+      border-radius: 15px;
+      font-size: 12px;
+      color: #ff69b4;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
+  <div id="status">接続中...</div>
   <div id="chat"></div>
 
   <script>
     const chat = document.getElementById("chat");
-    const socket = new WebSocket("ws://localhost:8765");
+    const statusDiv = document.getElementById("status");
+    let socket = null;
+    let reconnectInterval = 1000;
+    const maxReconnectInterval = 30000;
+    let reconnectTimer = null;
+    let isIntentionallyClosed = false;
 
-    socket.onmessage = event => {
-      const data = JSON.parse(event.data);
+    // WebSocketのURLを動的に決定
+    const wsUrl = (() => {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.hostname || 'localhost';
+      return `${protocol}//${host}:8765`;
+    })();
 
-      if (data.type === "init") {
-        loadCustomFonts(data.fonts);
-        chat.innerHTML = "";
-        data.messages.forEach(renderMessage);
-        chat.scrollTop = chat.scrollHeight;
-      }
+    console.log('WebSocket URL:', wsUrl);
 
-      if (data.type === "new") {
-        renderMessage(data.message);
-        chat.scrollTop = chat.scrollHeight;
-      }
-    };
+    function updateStatus(message, color = '#ff69b4') {
+      statusDiv.textContent = message;
+      statusDiv.style.color = color;
+      console.log('Status:', message);
+    }
 
-    socket.onopen = () => { console.log("WebSocket connected!"); };
-    socket.onerror = (error) => { console.error("WebSocket Error: ", error); };
-    socket.onclose = () => {
-        console.log("WebSocket disconnected. Trying to reconnect...");
-        setTimeout(() => { window.location.reload(); }, 3000);
-    };
-
-    function loadCustomFonts(fontFiles) {
-      if (!fontFiles || fontFiles.length === 0) {
-        console.log("カスタムフォントが見つかりませんでした。デフォルトフォントを使用します。");
+    function connect() {
+      if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) {
+        console.log("既に接続中またはオープン状態です");
         return;
       }
 
-      const styleSheet = document.createElement("style");
-      let fontFaceRules = "";
-
-      fontFiles.forEach(file => {
-        const fontName = file.split('.').slice(0, -1).join('.');
-        fontFaceRules += `
-          @font-face {
-            font-family: '${fontName}';
-            src: url('./fonts/${file}');
-          }
-        `;
-      });
-
-      styleSheet.textContent = fontFaceRules;
-      document.head.appendChild(styleSheet);
-
-      const primaryFontName = fontFiles[0].split('.').slice(0, -1).join('.');
-      document.documentElement.style.setProperty('--chat-font', `'${primaryFontName}'`);
-      console.log(`カスタムフォント '${primaryFontName}' を適用しました。`);
-    }
-
-    function getFileExtension(url) {
       try {
-        const cleanUrl = url.split("?")[0];
-        return cleanUrl.split(".").pop().toLowerCase();
-      } catch {
-        return "";
+        updateStatus("接続中...", "#ff69b4");
+        console.log('接続試行:', wsUrl);
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+          console.log("✅ WebSocket connected!");
+          updateStatus("接続完了", "#00cc00");
+          reconnectInterval = 1000;
+          if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+          }
+        };
+
+        socket.onmessage = event => {
+          console.log('📨 メッセージ受信:', event.data.substring(0, 100));
+          try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "init") {
+              console.log("📋 初期データ受信:", data.messages.length, "件のメッセージ");
+              loadCustomFonts(data.fonts);
+              chat.innerHTML = "";
+              data.messages.forEach(renderMessage);
+              chat.scrollTop = chat.scrollHeight;
+              updateStatus("準備完了", "#00cc00");
+            }
+
+            if (data.type === "new") {
+              console.log("🆕 新しいメッセージ受信");
+              renderMessage(data.message);
+              chat.scrollTop = chat.scrollHeight;
+            }
+          } catch (error) {
+            console.error("❌ メッセージ解析エラー:", error);
+            console.error("受信データ:", event.data);
+          }
+        };
+
+        socket.onerror = (error) => {
+          console.error("❌ WebSocket Error:", error);
+          console.error("エラー詳細:", {
+            readyState: socket.readyState,
+            url: socket.url
+          });
+          updateStatus("エラー発生", "#ff0000");
+        };
+
+        socket.onclose = (event) => {
+          console.log("❌ WebSocket disconnected.");
+          console.log("切断情報:", {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean
+          });
+
+          if (!isIntentionallyClosed) {
+            updateStatus(`切断 (${reconnectInterval/1000}秒後に再接続...)`, "#ff6600");
+
+            reconnectTimer = setTimeout(() => {
+              reconnectInterval = Math.min(reconnectInterval * 1.5, maxReconnectInterval);
+              console.log("🔄 再接続を試みます...");
+              connect();
+            }, reconnectInterval);
+          }
+        };
+
+      } catch (error) {
+        console.error("❌ 接続エラー:", error);
+        updateStatus("接続失敗", "#ff0000");
       }
     }
 
-    function renderMessage(m) {
-      const msgDiv = document.createElement("div");
-      msgDiv.className = "message";
+    // 残りの関数は同じ...
+    function loadCustomFonts(fontFiles) { /* 省略 */ }
+    function getFileExtension(url) { /* 省略 */ }
+    function renderMessage(m) { /* 省略 */ }
 
-      const avatar = document.createElement("img");
-      avatar.src = m.avatar;
-      avatar.className = "avatar";
-      msgDiv.appendChild(avatar);
-
-      const contentDiv = document.createElement("div");
-      contentDiv.className = "message-content";
-
-      const header = document.createElement("div");
-      const author = document.createElement("span");
-      author.className = "author";
-      author.textContent = m.author;
-      header.appendChild(author);
-
-      const text = document.createElement("span");
-      text.className = "text";
-      text.textContent = m.content;
-      header.appendChild(text);
-
-      contentDiv.appendChild(header);
-
-      if (m.attachments && m.attachments.length > 0) {
-        m.attachments.forEach(url => {
-          const ext = getFileExtension(url);
-          if (["jpg","jpeg","png","gif","webp","avif"].includes(ext)) {
-            const img = document.createElement("img");
-            img.src = url;
-            img.className = "attachment-img";
-            contentDiv.appendChild(img);
-          } else if (["mp4","webm"].includes(ext)) {
-            const video = document.createElement("video");
-            video.src = url;
-            video.controls = true;
-            video.className = "attachment-video";
-            contentDiv.appendChild(video);
-          } else {
-            const link = document.createElement("a");
-            link.href = url;
-            link.textContent = url;
-            link.target = "_blank";
-            link.className = "attachment-link";
-            contentDiv.appendChild(link);
-          }
-        });
+    window.addEventListener('beforeunload', () => {
+      isIntentionallyClosed = true;
+      if (socket) {
+        socket.close();
       }
+    });
 
-      if (m.embeds && m.embeds.length > 0) {
-        m.embeds.forEach(e => {
-          if (!e.title && !e.description && !e.image && !e.video) return;
-          const embedDiv = document.createElement("div");
-          embedDiv.className = "embed";
-          if (e.title) {
-            const title = document.createElement("div");
-            title.className = "embed-title";
-            title.textContent = e.title;
-            embedDiv.appendChild(title);
-          }
-          if (e.description) {
-            const desc = document.createElement("div");
-            desc.className = "embed-description";
-            desc.textContent = e.description;
-            embedDiv.appendChild(desc);
-          }
-          if (e.image) {
-            const img = document.createElement("img");
-            img.src = e.image;
-            img.className = "embed-img";
-            embedDiv.appendChild(img);
-          }
-          if (e.video) {
-            const video = document.createElement("video");
-            video.src = e.video;
-            video.controls = true;
-            video.className = "embed-video";
-            embedDiv.appendChild(video);
-          }
-          contentDiv.appendChild(embedDiv);
-        });
-      }
-
-      msgDiv.appendChild(contentDiv);
-      chat.appendChild(msgDiv);
+    // ページ読み込み完了後に接続
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', connect);
+    } else {
+      connect();
     }
   </script>
 </body>

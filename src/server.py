@@ -1,78 +1,117 @@
 import asyncio
-import json
-import logging
 import websockets
-from websockets.server import serve
-from websockets.http import Headers
+import json
+from typing import Set
+import logging
 
-# このファイルのロガーを取得
 logger = logging.getLogger(__name__)
 
 
-async def health_check(path: str, request_headers: Headers):
-    """
-    WebSocket以外の通常のリクエスト(favicon.icoなど)を処理し、エラーが出ないようにする。
-    """
-    if path == "/favicon.ico":
-        return (204, {}, b"")
-    return (204, {}, b"")
-
-
 class WebSocketServer:
-    def __init__(self, host, port, message_queue, discord_bot_client, font_list: list):
-        self.host = host
-        self.port = port
-        self.message_queue = message_queue
-        self.bot = discord_bot_client
-        self.connected_clients = set()
-        self.font_list = font_list
+    """WebSocketサーバー for OBS連携"""
 
-    async def _register(self, websocket):
+    def __init__(self, config: dict):
+        self.config = config
+        self.host = config['websocket']['host']
+        self.port = config['websocket']['port']
+        self.connected_clients: Set[websockets.WebSocketServerProtocol] = set()
+        self.message_history = []
+        self.max_messages = config['discord']['max_messages']
+
+    async def handler(self, websocket, path):
+        """WebSocket接続ハンドラー"""
+        logger.info(f"🔌 WebSocketクライアント接続: {websocket.remote_address}")
         self.connected_clients.add(websocket)
-        logger.info(f"OBSクライアントが接続: {websocket.remote_address}")
 
-    async def _unregister(self, websocket):
-        self.connected_clients.remove(websocket)
-        logger.info(f"OBSクライアントが切断: {websocket.remote_address}")
+        try:
+            # 接続時に初期データ(メッセージ履歴)を送信
+            await websocket.send(json.dumps({
+                "type": "init",
+                "messages": self.message_history,
+                "fonts": []
+            }, ensure_ascii=False))
 
-    async def _broadcast(self, message_json):
-        if self.connected_clients:
-            tasks = [asyncio.create_task(client.send(message_json)) for client in self.connected_clients]
-            await asyncio.wait(tasks)
+            # クライアントからのメッセージを待機(keepalive用)
+            async for message in websocket:
+                # クライアントからのメッセージは特に処理しない
+                logger.debug(f"クライアントメッセージ: {message}")
 
-    async def _send_initial_messages(self, websocket):
-        history = await self.bot.get_initial_history()
-        init_data = {
-            "type": "init",
-            "messages": history,
-            "fonts": self.font_list
-        }
-        await websocket.send(json.dumps(init_data))
-        logger.info(f"初期メッセージを送信しました ({len(history)}件)")
+        except websockets.exceptions.ConnectionClosed:
+            logger.info(f"🔌 WebSocketクライアント切断: {websocket.remote_address}")
+        except Exception as e:
+            logger.error(f"WebSocketエラー: {e}")
+        finally:
+            self.connected_clients.discard(websocket)
 
-    async def _queue_listener(self):
-        logger.info("メッセージキューの監視を開始...")
-        while True:
-            message_data = await self.message_queue.get()
-            await self._broadcast(json.dumps(message_data))
-            self.message_queue.task_done()
+    async def broadcast(self, data: dict):
+        """全接続クライアントにデータを送信"""
+        if not self.connected_clients:
+            logger.debug("送信先クライアントなし")
+            return
+
+        message = json.dumps(data, ensure_ascii=False)
+        disconnected = set()
+
+        for client in self.connected_clients:
+            try:
+                await client.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                disconnected.add(client)
+            except Exception as e:
+                logger.error(f"メッセージ送信エラー: {e}")
+                disconnected.add(client)
+
+        # 切断されたクライアントを削除
+        self.connected_clients.difference_update(disconnected)
+
+        if disconnected:
+            logger.info(f"切断されたクライアントを削除: {len(disconnected)}件")
+
+    async def add_message(self, message_type: str, message_data):
+        """メッセージを追加してブロードキャスト"""
+
+        if message_type == "init":
+            # 初期データ: メッセージ履歴を置き換え
+            self.message_history = message_data
+            logger.info(f"📋 初期メッセージ設定: {len(self.message_history)}件")
+
+        elif message_type == "new":
+            # 新規メッセージ: 履歴に追加してブロードキャスト
+            self.message_history.append(message_data)
+
+            # 最大数を超えたら古いメッセージを削除
+            if len(self.message_history) > self.max_messages:
+                removed = len(self.message_history) - self.max_messages
+                self.message_history = self.message_history[-self.max_messages:]
+                logger.debug(f"古いメッセージを削除: {removed}件")
+
+            # クライアントに送信
+            await self.broadcast({
+                "type": "new",
+                "message": message_data
+            })
+
+        elif message_type == "bulk":
+            # 一括追加: 履歴に追加してブロードキャスト
+            for msg in message_data:
+                self.message_history.append(msg)
+                await self.broadcast({
+                    "type": "new",
+                    "message": msg
+                })
+                await asyncio.sleep(0.1)  # 少し間隔を開ける
+
+            # 最大数を超えたら古いメッセージを削除
+            if len(self.message_history) > self.max_messages:
+                self.message_history = self.message_history[-self.max_messages:]
 
     async def start(self):
-        logger.info(f"WebSocketサーバーを ws://{self.host}:{self.port} で起動します。")
+        """WebSocketサーバーを起動"""
+        logger.info(f"🌐 WebSocketサーバー起動: ws://{self.host}:{self.port}")
 
-        async def handler_with_init(websocket, path=None):
-            await self._register(websocket)
-            try:
-                await self._send_initial_messages(websocket)
-                await websocket.wait_closed()
-            finally:
-                await self._unregister(websocket)
+        async with websockets.serve(self.handler, self.host, self.port):
+            await asyncio.Future()  # 永続実行
 
-        server = serve(
-            handler_with_init,
-            self.host,
-            self.port,
-            process_request=health_check
-        )
-
-        await asyncio.gather(server, self._queue_listener())
+    def get_client_count(self) -> int:
+        """接続中のクライアント数を取得"""
+        return len(self.connected_clients)
