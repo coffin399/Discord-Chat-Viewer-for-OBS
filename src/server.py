@@ -25,7 +25,6 @@ class WebSocketServer:
             await asyncio.wait([client.send(message_json) for client in self.connected_clients])
 
     async def _send_initial_messages(self, websocket):
-        # botオブジェクトに履歴の取得を依頼します
         history = await self.bot.get_initial_history()
         init_data = {
             "type": "init",
@@ -42,7 +41,8 @@ class WebSocketServer:
             await self._broadcast(json.dumps(message_data))
             self.message_queue.task_done()
 
-    async def connection_handler(self, websocket, path):
+    # async def connection_handler(self, websocket, path):  <- 変更前
+    async def connection_handler(self, websocket, path=None): # <- 変更後 (path=None を追加)
         await self._register(websocket)
         try:
             await self._send_initial_messages(websocket)
