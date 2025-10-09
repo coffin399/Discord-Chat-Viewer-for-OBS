@@ -1,5 +1,5 @@
 import asyncio
-import logging
+import logging  # loggingモジュール
 import discord
 import os
 from src.bot import DiscordBot, setup_bot
@@ -8,6 +8,7 @@ from src import config_manager
 
 
 def get_available_fonts() -> list[str]:
+    # (この関数は変更なし)
     fonts_dir = 'fonts'
     supported_extensions = ('.ttf', '.otf', '.woff', '.woff2')
     if not os.path.isdir(fonts_dir):
@@ -27,7 +28,10 @@ def get_available_fonts() -> list[str]:
 
 
 async def main():
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    # logging.basicConfig(level=logging.INFO, ...) # 変更前
+    logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')  # 変更後
+
+    # (以降のコードは変更なし)
     available_fonts = get_available_fonts()
 
     try:
