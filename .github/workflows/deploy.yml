@@ -6,6 +6,17 @@ on:
   pull_request:
     branches: [ main, master ]
 
+# 権限を明示的に設定
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行を制限
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,27 +25,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        node-version: '18'
-        
-    - name: Install dependencies
-      run: |
-        # 必要に応じて依存関係をインストール
-        # npm install
-        
-    - name: Build documentation
-      run: |
-        # ドキュメントのビルド処理（必要に応じて）
-        # 今回は静的ファイルなので、そのままコピー
-        mkdir -p dist
-        cp -r docs/* dist/
+        path: './docs'
         
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
-        cname: # カスタムドメインがある場合はここに設定
+      id: deployment
+      uses: actions/deploy-pages@v4
