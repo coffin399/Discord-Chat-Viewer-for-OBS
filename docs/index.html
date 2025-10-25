@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Chat Viewer for OBS - ドキュメント</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Discord Chat Viewer for OBS</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">ホーム</a>
+                <a href="setup.html" class="nav-link">セットアップ</a>
+                <a href="usage.html" class="nav-link">使い方</a>
+                <a href="api.html" class="nav-link">技術仕様</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <h2 class="hero-title">DiscordチャットをOBSで可愛く表示</h2>
+                <p class="hero-description">
+                    Discordの特定チャンネルのチャットを、OBSのブラウザソースにリアルタイムで可愛く表示するためのツールです。
+                    配信者向けに最適化された、使いやすいDiscord連携ツールです。
+                </p>
+                <div class="hero-buttons">
+                    <a href="setup.html" class="btn btn-primary">今すぐ始める</a>
+                    <a href="https://github.com/your-username/Discord-Chat-Viewer-for-OBS" class="btn btn-secondary" target="_blank">GitHub</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title">✨ 主な特徴</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>リアルタイム更新</h3>
+                        <p>Discordのチャットが投稿されると、即座にOBS上の表示に反映されます。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📺</div>
+                        <h3>複数チャンネル対応</h3>
+                        <p>複数のチャンネルを同時に監視し、一つのビューに表示できます。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎮</div>
+                        <h3>スラッシュコマンド</h3>
+                        <p>/add /remove コマンドで、配信中に表示するチャンネルを動的に変更できます。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3>カスタムフォント</h3>
+                        <p>fonts フォルダにお好きなフォントを入れるだけで、見た目を簡単にカスタマイズできます。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📎</div>
+                        <h3>メディア対応</h3>
+                        <p>テキストだけでなく、画像、動画、URLの埋め込み（Embed）も表示できます。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🚀</div>
+                        <h3>簡単セットアップ</h3>
+                        <p>Windowsユーザー向けに、ダブルクリックで起動できるバッチファイルを用意しています。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="setup" class="setup">
+            <div class="container">
+                <h2 class="section-title">🔧 セットアップ手順</h2>
+                
+                <div class="setup-step">
+                    <h3>1. 必要なもの</h3>
+                    <ul>
+                        <li><a href="https://www.python.org/downloads/" target="_blank">Python 3.8</a> 以上</li>
+                        <li>Discordアカウント</li>
+                        <li>OBS Studio</li>
+                    </ul>
+                </div>
+
+                <div class="setup-step">
+                    <h3>2. Discord Botの準備</h3>
+                    <p>このツールはDiscord Botを利用してメッセージを取得します。</p>
+                    <ol>
+                        <li><strong>Botの作成</strong>:
+                            <ul>
+                                <li><a href="https://discord.com/developers/applications" target="_blank">Discord Developer Portal</a>にアクセスし、ログインします。</li>
+                                <li><code>New Application</code>ボタンを押し、好きな名前（例: OBS Chat Bot）でアプリケーションを作成します。</li>
+                                <li>左側のメニューから <code>Bot</code> を選択し、<code>Add Bot</code> をクリックしてBotを作成します。</li>
+                            </ul>
+                        </li>
+                        <li><strong>インテントの有効化</strong>:
+                            <ul>
+                                <li>Botのページで、<code>Privileged Gateway Intents</code> という項目を探します。</li>
+                                <li><strong>MESSAGE CONTENT INTENT</strong> のトグルをオン（有効）にしてください。これがないとメッセージの内容を読み取れません。</li>
+                            </ul>
+                        </li>
+                        <li><strong>Botトークンの取得</strong>:
+                            <ul>
+                                <li>Botの名前の下にある <code>Reset Token</code> (または <code>View Token</code>) をクリックして、Botのトークンをコピーします。</li>
+                                <li><strong>⚠️ このトークンは絶対に他人に教えたり、公開しないでください。</strong></li>
+                            </ul>
+                        </li>
+                        <li><strong>Botをサーバーに招待</strong>:
+                            <ul>
+                                <li>左側のメニューから <code>OAuth2</code> → <code>URL Generator</code> を選択します。</li>
+                                <li><code>SCOPES</code> で <code>bot</code> と <code>applications.commands</code> の両方にチェックを入れます。</li>
+                                <li><code>BOT PERMISSIONS</code> で以下の権限にチェックを入れます：
+                                    <ul>
+                                        <li><code>View Channels</code> (チャンネルを見る)</li>
+                                        <li><code>Read Message History</code> (メッセージ履歴を読む)</li>
+                                        <li><code>Send Messages</code> (メッセージを送信) ※必須ではないが推奨</li>
+                                    </ul>
+                                </li>
+                                <li>生成されたURLをコピーし、ブラウザで開いて、Botを追加したいあなたのDiscordサーバーに招待します。</li>
+                            </ul>
+                        </li>
+                        <li><strong>チャンネルIDの取得</strong>:
+                            <ul>
+                                <li>Discordの設定で「詳細設定」を開き、「開発者モード」をオンにします。</li>
+                                <li>OBSに表示したいチャンネルを右クリックし、「チャンネルIDをコピー」を選択します。</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="setup-step">
+                    <h3>3. 設定ファイルの編集</h3>
+                    <p><code>config.yaml</code> をテキストエディタで開き、あなたの情報に書き換えます。</p>
+                    <pre><code># Discord Botのトークンを""で囲んで貼り付け
+discord:
+  token: "ここに先ほどコピーしたBotトークンを貼り付け"
+  # 初期監視チャンネルID（複数可）
+  channels:
+    - 123456789012345678 # ここにコピーしたチャンネルIDを貼り付け
+  # 起動時に取得する過去メッセージ数
+  history_limit: 50
+  # メモリに保持する最大メッセージ数
+  max_messages: 100
+
+# WebSocketサーバー設定
+websocket:
+  host: "0.0.0.0"
+  port: 8765
+
+# ログ設定
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR</code></pre>
+                </div>
+
+                <div class="setup-step">
+                    <h3>4. フォントの準備 (任意)</h3>
+                    <p>チャットの表示フォントをカスタマイズできます。</p>
+                    <ol>
+                        <li>プロジェクトフォルダに <code>fonts</code> という名前のフォルダがあることを確認します。（なければ作成してください）</li>
+                        <li>お好きなフォントファイル（<code>.ttf</code>, <code>.otf</code>など）を、この <code>fonts</code> フォルダの中に入れます。</li>
+                        <li><code>fonts</code> フォルダにファイルが置かれている場合、プログラムが自動で読み込み、チャットの表示に適用します。</li>
+                        <li><code>fonts</code> フォルダが空、または存在しない場合は、Windowsの標準フォント（游ゴシックやメイリオなど）で表示されます。</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <section id="usage" class="usage">
+            <div class="container">
+                <h2 class="section-title">💡 使い方</h2>
+                
+                <div class="usage-step">
+                    <h3>1. 起動</h3>
+                    <p><strong><code>start.bat</code> をダブルクリックして実行します。</strong></p>
+                    <p>黒いウィンドウが開き、必要なライブラリのインストールとサーバーの起動が自動的に行われます。「<code>Starting the Discord Bot and WebSocket server...</code>」というメッセージが表示されれば成功です。</p>
+                    <p>サーバーを停止するには、この黒いウィンドウを選択した状態で <code>Ctrl + C</code> を押してください。</p>
+                </div>
+
+                <div class="usage-step">
+                    <h3>2. チャンネルの管理 (Discord上)</h3>
+                    <p>Discordのサーバーで、以下のスラッシュコマンドを実行して、OBSに表示するチャンネルをリアルタイムで変更できます。（このコマンドは「チャンネルの管理」権限を持つユーザーのみ実行可能です）</p>
+                    <ul>
+                        <li><code>/add channel:#雑談</code> - <code>#雑談</code> チャンネルを監視対象に追加します。</li>
+                        <li><code>/remove channel:#雑談</code> - <code>#雑談</code> チャンネルを監視対象から削除します。</li>
+                        <li><code>/list</code> - 現在監視中のチャンネル一覧を表示します。</li>
+                    </ul>
+                </div>
+
+                <div class="usage-step">
+                    <h3>3. OBSへの設定</h3>
+                    <ol>
+                        <li>OBSを起動し、「ソース」パネルの <code>+</code> ボタンから「<strong>ブラウザ</strong>」を選択します。</li>
+                        <li>プロパティ画面で、以下のように設定します：
+                            <ul>
+                                <li><strong><code>ローカルファイル</code></strong> にチェックを入れる。</li>
+                                <li><strong><code>ローカルファイル</code></strong> の参照ボタンを押し、このプロジェクトフォルダ内の <code>index.html</code> を選択する。</li>
+                                <li><strong><code>幅</code></strong> と <strong><code>高さ</code></strong> を配信画面に合わせて調整します。（例: 幅 <code>400</code>, 高さ <code>600</code>）</li>
+                            </ul>
+                        </li>
+                        <li><code>OK</code> をクリックしてソースを追加します。</li>
+                    </ol>
+                    <p>これで、Discordにメッセージが投稿されるとOBSの画面にリアルタイムで表示されるようになります。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="api" class="api">
+            <div class="container">
+                <h2 class="section-title">🔧 技術仕様</h2>
+                
+                <div class="api-section">
+                    <h3>アーキテクチャ</h3>
+                    <p>このツールは以下の3つの主要コンポーネントで構成されています：</p>
+                    <ul>
+                        <li><strong>Discord Bot</strong> - Discord APIからメッセージを取得</li>
+                        <li><strong>WebSocket Server</strong> - リアルタイム通信を提供</li>
+                        <li><strong>Web Client</strong> - OBSで表示するHTMLページ</li>
+                    </ul>
+                </div>
+
+                <div class="api-section">
+                    <h3>WebSocket API</h3>
+                    <p>クライアントとサーバー間の通信はWebSocketを使用します。</p>
+                    <h4>接続</h4>
+                    <pre><code>ws://localhost:8765</code></pre>
+                    
+                    <h4>メッセージ形式</h4>
+                    <h5>初期化メッセージ (type: "init")</h5>
+                    <pre><code>{
+  "type": "init",
+  "messages": [...],
+  "fonts": [...]
+}</code></pre>
+                    
+                    <h5>新規メッセージ (type: "new")</h5>
+                    <pre><code>{
+  "type": "new",
+  "message": {
+    "id": "message_id",
+    "author": "ユーザー名",
+    "avatar": "avatar_url",
+    "content": "メッセージ内容",
+    "timestamp": "2024-01-01T00:00:00",
+    "channel_name": "チャンネル名",
+    "attachments": [...],
+    "embeds": [...]
+  }
+}</code></pre>
+                </div>
+
+                <div class="api-section">
+                    <h3>設定ファイル (config.yaml)</h3>
+                    <pre><code># Discord Bot設定
+discord:
+  token: "YOUR_DISCORD_BOT_TOKEN_HERE"
+  # 初期監視チャンネルID（複数可）
+  channels:
+    - 123456789012345678
+    - 987654321098765432
+  # 起動時に取得する過去メッセージ数
+  history_limit: 50
+  # メモリに保持する最大メッセージ数
+  max_messages: 100
+
+# WebSocketサーバー設定
+websocket:
+  host: "0.0.0.0"
+  port: 8765
+
+# ログ設定
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR</code></pre>
+                </div>
+
+                <div class="api-section">
+                    <h3>ファイル構成</h3>
+                    <pre><code>.
+├── main.py                # プログラムの起動ファイル
+├── config.yaml            # 設定ファイル
+├── start.bat              # Windows用簡単起動スクリプト
+├── requirements.txt       # Pythonの依存ライブラリリスト
+├── index.html             # OBSで表示するチャット画面
+├── README.md              # このファイル
+│
+├── src/                   # ソースコード用フォルダ
+│   ├── __init__.py
+│   ├── bot.py
+│   └── server.py
+│
+└── fonts/                 # カスタムフォント置き場
+    └── (例: MyKawaiiFont.ttf)</code></pre>
+                </div>
+
+                <div class="api-section">
+                    <h3>依存関係</h3>
+                    <ul>
+                        <li><code>discord.py</code> - Discord API連携</li>
+                        <li><code>websockets</code> - WebSocket通信</li>
+                        <code>PyYAML</code> - 設定ファイル読み込み</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Discord Chat Viewer for OBS. MIT License.</p>
+        </div>
+    </footer>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ヘッダーのスクロール効果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

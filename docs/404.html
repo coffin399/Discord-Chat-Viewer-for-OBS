@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ページが見つかりません - Discord Chat Viewer for OBS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">Discord Chat Viewer for OBS</a></h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">ホーム</a>
+                <a href="setup.html" class="nav-link">セットアップ</a>
+                <a href="usage.html" class="nav-link">使い方</a>
+                <a href="api.html" class="nav-link">技術仕様</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <h2 class="hero-title">404 - ページが見つかりません</h2>
+                <p class="hero-description">
+                    お探しのページは存在しないか、移動された可能性があります。
+                </p>
+                <div class="hero-buttons">
+                    <a href="index.html" class="btn btn-primary">ホームに戻る</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h2 class="section-title">📚 利用可能なページ</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🏠</div>
+                        <h3>ホーム</h3>
+                        <p>プロジェクトの概要と主な特徴を紹介します。</p>
+                        <a href="index.html" class="btn btn-primary">ホームを見る</a>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔧</div>
+                        <h3>セットアップ</h3>
+                        <p>Discord Botの作成から設定まで詳しく説明します。</p>
+                        <a href="setup.html" class="btn btn-primary">セットアップを見る</a>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💡</div>
+                        <h3>使い方</h3>
+                        <p>アプリケーションの起動からOBS設定まで解説します。</p>
+                        <a href="usage.html" class="btn btn-primary">使い方を見る</a>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔧</div>
+                        <h3>技術仕様</h3>
+                        <p>API仕様やアーキテクチャの詳細を説明します。</p>
+                        <a href="api.html" class="btn btn-primary">技術仕様を見る</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Discord Chat Viewer for OBS. MIT License.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ヘッダーのスクロール効果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

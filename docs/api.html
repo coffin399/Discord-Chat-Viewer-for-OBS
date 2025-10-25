@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技術仕様 - Discord Chat Viewer for OBS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">Discord Chat Viewer for OBS</a></h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">ホーム</a>
+                <a href="setup.html" class="nav-link">セットアップ</a>
+                <a href="usage.html" class="nav-link">使い方</a>
+                <a href="api.html" class="nav-link">技術仕様</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <h2 class="hero-title">技術仕様</h2>
+                <p class="hero-description">
+                    Discord Chat Viewer for OBSの技術的な詳細、API仕様、アーキテクチャについて説明します。
+                    開発者向けの情報も含まれています。
+                </p>
+            </div>
+        </section>
+
+        <section class="api">
+            <div class="container">
+                <div class="api-section">
+                    <h3>🏗️ アーキテクチャ概要</h3>
+                    <p>このツールは以下の3つの主要コンポーネントで構成されています：</p>
+                    
+                    <h4>システム構成図</h4>
+                    <pre><code>┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Discord API   │    │   Discord Bot   │    │ WebSocket Server│
+│                 │◄──►│                 │◄──►│                 │
+│  - メッセージ取得  │    │  - チャンネル監視 │    │  - リアルタイム通信│
+│  - イベント受信   │    │  - コマンド処理   │    │  - クライアント管理│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                       │
+                                                       ▼
+                                              ┌─────────────────┐
+                                              │   Web Client    │
+                                              │                 │
+                                              │  - HTML/CSS/JS  │
+                                              │  - OBS表示用     │
+                                              └─────────────────┘</code></pre>
+                    
+                    <h4>コンポーネント詳細</h4>
+                    <ul>
+                        <li><strong>Discord Bot</strong> - Discord APIからメッセージを取得し、WebSocketサーバーに送信</li>
+                        <li><strong>WebSocket Server</strong> - リアルタイム通信を提供し、複数クライアントに対応</li>
+                        <li><strong>Web Client</strong> - OBSで表示するHTMLページ、WebSocketでデータを受信</li>
+                    </ul>
+                </div>
+
+                <div class="api-section">
+                    <h3>🔌 WebSocket API</h3>
+                    <p>クライアントとサーバー間の通信はWebSocketを使用します。</p>
+                    
+                    <h4>接続情報</h4>
+                    <ul>
+                        <li><strong>URL:</strong> <code>ws://localhost:8765</code></li>
+                        <li><strong>プロトコル:</strong> WebSocket</li>
+                        <li><strong>エンコーディング:</strong> UTF-8</li>
+                    </ul>
+                    
+                    <h4>メッセージ形式</h4>
+                    <p>すべてのメッセージはJSON形式で送信されます。</p>
+                    
+                    <h5>初期化メッセージ (type: "init")</h5>
+                    <p>クライアント接続時に送信される初期データ</p>
+                    <pre><code>{
+  "type": "init",
+  "messages": [
+    {
+      "id": "message_id",
+      "author": "ユーザー名",
+      "avatar": "avatar_url",
+      "content": "メッセージ内容",
+      "timestamp": "2024-01-01T00:00:00",
+      "channel_name": "チャンネル名",
+      "attachments": [...],
+      "embeds": [...]
+    }
+  ],
+  "fonts": [
+    {
+      "name": "フォント名",
+      "data": "base64エンコードされたフォントデータ",
+      "format": "ttf",
+      "mime": "font/ttf"
+    }
+  ]
+}</code></pre>
+                    
+                    <h5>新規メッセージ (type: "new")</h5>
+                    <p>新しいメッセージが投稿された時に送信</p>
+                    <pre><code>{
+  "type": "new",
+  "message": {
+    "id": "message_id",
+    "author": "ユーザー名",
+    "avatar": "avatar_url",
+    "content": "メッセージ内容",
+    "timestamp": "2024-01-01T00:00:00",
+    "channel_name": "チャンネル名",
+    "attachments": [
+      {
+        "url": "添付ファイルURL",
+        "filename": "ファイル名",
+        "content_type": "MIMEタイプ"
+      }
+    ],
+    "embeds": [
+      {
+        "title": "埋め込みタイトル",
+        "description": "埋め込み説明",
+        "url": "埋め込みURL",
+        "color": 16711680,
+        "image": "画像URL",
+        "thumbnail": "サムネイルURL"
+      }
+    ]
+  }
+}</code></pre>
+                </div>
+
+                <div class="api-section">
+                    <h3>⚙️ 設定ファイル (config.yaml)</h3>
+                    <p>アプリケーションの設定はYAML形式の設定ファイルで管理されます。</p>
+                    
+                    <h4>設定項目詳細</h4>
+                    <pre><code># Discord Bot設定
+discord:
+  token: "YOUR_DISCORD_BOT_TOKEN_HERE"  # Discord Botトークン（必須）
+  channels:                              # 監視するチャンネルIDリスト
+    - 123456789012345678
+    - 987654321098765432
+  history_limit: 50                     # 起動時に取得する過去メッセージ数
+  max_messages: 100                      # メモリに保持する最大メッセージ数
+
+# WebSocketサーバー設定
+websocket:
+  host: "0.0.0.0"                       # バインドするホスト
+  port: 8765                            # バインドするポート
+
+# ログ設定
+logging:
+  level: "INFO"                         # ログレベル: DEBUG, INFO, WARNING, ERROR</code></pre>
+                    
+                    <h4>設定項目の説明</h4>
+                    <ul>
+                        <li><code>discord.token</code>: Discord Botのトークン（必須）</li>
+                        <li><code>discord.channels</code>: 監視するチャンネルのIDリスト</li>
+                        <li><code>discord.history_limit</code>: 起動時に取得する過去メッセージ数（1-100推奨）</li>
+                        <li><code>discord.max_messages</code>: メモリに保持する最大メッセージ数（パフォーマンス調整用）</li>
+                        <li><code>websocket.host</code>: WebSocketサーバーがバインドするホスト（通常は"0.0.0.0"）</li>
+                        <li><code>websocket.port</code>: WebSocketサーバーのポート番号（デフォルト: 8765）</li>
+                        <li><code>logging.level</code>: ログの詳細レベル</li>
+                    </ul>
+                </div>
+
+                <div class="api-section">
+                    <h3>📁 ファイル構成</h3>
+                    <p>プロジェクトのファイル構成と各ファイルの役割です。</p>
+                    
+                    <pre><code>.
+├── main.py                    # メインエントリーポイント
+├── config.yaml               # 設定ファイル
+├── start.bat                 # Windows用起動スクリプト
+├── requirements.txt          # Python依存関係
+├── index.html                # OBS表示用HTML
+├── README.md                 # プロジェクト説明
+│
+├── src/                      # ソースコード
+│   ├── __init__.py          # パッケージ初期化
+│   ├── bot.py               # Discord Bot実装
+│   └── server.py            # WebSocketサーバー実装
+│
+├── fonts/                    # カスタムフォント置き場
+│   └── (フォントファイル)
+│
+└── docs/                     # ドキュメント
+    ├── index.html           # メインページ
+    ├── setup.html           # セットアップガイド
+    ├── usage.html           # 使用方法
+    ├── api.html             # 技術仕様
+    ├── styles.css           # スタイルシート
+    └── README.md            # ドキュメント説明</code></pre>
+                    
+                    <h4>主要ファイルの役割</h4>
+                    <ul>
+                        <li><code>main.py</code>: アプリケーションの起動と設定読み込み</li>
+                        <li><code>src/bot.py</code>: Discord Botの実装、メッセージ監視とコマンド処理</li>
+                        <li><code>src/server.py</code>: WebSocketサーバーの実装、リアルタイム通信</li>
+                        <li><code>index.html</code>: OBSで表示するWebクライアント</li>
+                        <li><code>config.yaml</code>: アプリケーション設定</li>
+                    </ul>
+                </div>
+
+                <div class="api-section">
+                    <h3>📦 依存関係</h3>
+                    <p>このプロジェクトで使用されている外部ライブラリです。</p>
+                    
+                    <h4>Python依存関係</h4>
+                    <pre><code>discord.py>=2.0.0    # Discord API連携
+websockets>=10.0     # WebSocket通信
+PyYAML>=6.0          # YAML設定ファイル読み込み</code></pre>
+                    
+                    <h4>ライブラリの役割</h4>
+                    <ul>
+                        <li><code>discord.py</code>: Discord APIとの通信、Bot機能の実装</li>
+                        <li><code>websockets</code>: WebSocketサーバーとクライアント間の通信</li>
+                        <li><code>PyYAML</code>: 設定ファイル（config.yaml）の読み込みとパース</li>
+                    </ul>
+                    
+                    <h4>システム要件</h4>
+                    <ul>
+                        <li><strong>Python:</strong> 3.8以上</li>
+                        <li><strong>OS:</strong> Windows, macOS, Linux</li>
+                        <li><strong>メモリ:</strong> 100MB以上（推奨）</li>
+                        <li><strong>ネットワーク:</strong> Discord APIとWebSocket通信が可能</li>
+                    </ul>
+                </div>
+
+                <div class="api-section">
+                    <h3>🔧 開発者向け情報</h3>
+                    <p>プロジェクトの拡張やカスタマイズを行う開発者向けの情報です。</p>
+                    
+                    <h4>開発環境のセットアップ</h4>
+                    <pre><code># リポジトリのクローン
+git clone https://github.com/your-username/Discord-Chat-Viewer-for-OBS.git
+cd Discord-Chat-Viewer-for-OBS
+
+# 仮想環境の作成
+python -m venv .venv
+
+# 仮想環境の有効化
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
+
+# 依存関係のインストール
+pip install -r requirements.txt
+
+# 開発用依存関係のインストール（オプション）
+pip install black flake8 pytest</code></pre>
+                    
+                    <h4>コードの構造</h4>
+                    <ul>
+                        <li><strong>非同期処理:</strong> asyncioを使用した非同期プログラミング</li>
+                        <li><strong>イベント駆動:</strong> DiscordイベントとWebSocketイベントの処理</li>
+                        <li><strong>設定管理:</strong> YAMLファイルによる設定の外部化</li>
+                        <li><strong>ログ機能:</strong> 構造化されたログ出力</li>
+                    </ul>
+                    
+                    <h4>拡張のポイント</h4>
+                    <ul>
+                        <li><strong>新しいコマンド:</strong> <code>src/bot.py</code>の<code>_setup_commands</code>メソッド</li>
+                        <li><strong>メッセージフォーマット:</strong> <code>format_message</code>メソッド</li>
+                        <li><strong>WebSocketメッセージ:</strong> <code>src/server.py</code>の<code>add_message</code>メソッド</li>
+                        <li><strong>フロントエンド:</strong> <code>index.html</code>のJavaScript部分</li>
+                    </ul>
+                </div>
+
+                <div class="api-section">
+                    <h3>🐛 デバッグとログ</h3>
+                    <p>問題の特定と解決のためのデバッグ情報です。</p>
+                    
+                    <h4>ログレベルの設定</h4>
+                    <p><code>config.yaml</code>でログレベルを変更できます：</p>
+                    <ul>
+                        <li><code>DEBUG</code>: 詳細なデバッグ情報</li>
+                        <li><code>INFO</code>: 一般的な情報（推奨）</li>
+                        <li><code>WARNING</code>: 警告メッセージ</li>
+                        <li><code>ERROR</code>: エラーメッセージのみ</li>
+                    </ul>
+                    
+                    <h4>よくあるエラー</h4>
+                    <ul>
+                        <li><strong>Discord Bot接続エラー:</strong> トークンが無効または権限不足</li>
+                        <li><strong>WebSocket接続エラー:</strong> ポートが使用中またはファイアウォール</li>
+                        <li><strong>チャンネルアクセスエラー:</strong> Botの権限不足</li>
+                        <li><strong>メッセージ取得エラー:</strong> MESSAGE CONTENT INTENTが無効</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Discord Chat Viewer for OBS. MIT License.</p>
+        </div>
+    </footer>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ヘッダーのスクロール効果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

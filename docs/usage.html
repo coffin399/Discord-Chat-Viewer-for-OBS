@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用方法 - Discord Chat Viewer for OBS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">Discord Chat Viewer for OBS</a></h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">ホーム</a>
+                <a href="setup.html" class="nav-link">セットアップ</a>
+                <a href="usage.html" class="nav-link">使い方</a>
+                <a href="api.html" class="nav-link">技術仕様</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <h2 class="hero-title">使用方法</h2>
+                <p class="hero-description">
+                    Discord Chat Viewer for OBSの基本的な使用方法から高度な機能まで、
+                    実際の操作手順を詳しく説明します。
+                </p>
+            </div>
+        </section>
+
+        <section class="usage">
+            <div class="container">
+                <div class="usage-step">
+                    <h3>🚀 アプリケーションの起動</h3>
+                    <p>セットアップが完了したら、アプリケーションを起動します。</p>
+                    
+                    <h4>Windowsでの起動</h4>
+                    <ol>
+                        <li>プロジェクトフォルダ内の<code>start.bat</code>をダブルクリック</li>
+                        <li>黒いウィンドウ（コマンドプロンプト）が開きます</li>
+                        <li>必要なライブラリのインストールが自動で実行されます</li>
+                        <li>「<code>Starting the Discord Bot and WebSocket server...</code>」と表示されれば成功</li>
+                    </ol>
+                    
+                    <h4>手動での起動</h4>
+                    <ol>
+                        <li>コマンドプロンプトまたはPowerShellを開く</li>
+                        <li>プロジェクトフォルダに移動</li>
+                        <li>以下のコマンドを実行：
+                            <pre><code># 仮想環境の作成（初回のみ）
+python -m venv .venv
+
+# 仮想環境の有効化
+.venv\Scripts\activate
+
+# 依存関係のインストール
+pip install -r requirements.txt
+
+# アプリケーションの起動
+python main.py</code></pre>
+                        </li>
+                    </ol>
+                    
+                    <h4>起動確認</h4>
+                    <p>正常に起動すると、以下のような情報が表示されます：</p>
+                    <pre><code>============================================================
+  Discord to OBS Chat Viewer
+============================================================
+設定情報:
+  監視チャンネル数: 2
+  履歴取得件数: 50
+  最大保持件数: 100
+  WebSocketポート: 8765
+============================================================
+コマンド:
+  /add <チャンネル>   - チャンネルを監視リストに追加
+  /remove <チャンネル> - チャンネルを監視リストから削除
+  /list              - 監視中のチャンネル一覧
+============================================================</code></pre>
+                </div>
+
+                <div class="usage-step">
+                    <h3>📺 OBS Studioでの設定</h3>
+                    <p>Discord Chat ViewerをOBSで表示するための設定手順です。</p>
+                    
+                    <h4>1. ブラウザソースの追加</h4>
+                    <ol>
+                        <li>OBS Studioを起動</li>
+                        <li>「ソース」パネルの<code>+</code>ボタンをクリック</li>
+                        <li>「<strong>ブラウザ</strong>」を選択</li>
+                        <li>ソース名を入力（例: "Discord Chat"）</li>
+                        <li><code>OK</code>をクリック</li>
+                    </ol>
+                    
+                    <h4>2. プロパティの設定</h4>
+                    <ol>
+                        <li>プロパティ画面で以下の設定を行う：
+                            <ul>
+                                <li><strong>ローカルファイル</strong>にチェックを入れる</li>
+                                <li><strong>ローカルファイル</strong>の参照ボタンをクリック</li>
+                                <li>プロジェクトフォルダ内の<code>index.html</code>を選択</li>
+                                <li><strong>幅</strong>と<strong>高さ</strong>を設定（例: 幅400px、高さ600px）</li>
+                                <li><strong>FPS</strong>を30に設定（推奨）</li>
+                            </ul>
+                        </li>
+                        <li><code>OK</code>をクリックして設定を完了</li>
+                    </ol>
+                    
+                    <h4>3. 表示の確認</h4>
+                    <p>設定が正しく完了すると、OBSのプレビューにDiscordチャットが表示されます。</p>
+                    <ul>
+                        <li>接続状態は右上のステータス表示で確認できます</li>
+                        <li>「接続完了」と表示されれば正常に動作しています</li>
+                        <li>Discordでメッセージを投稿すると、リアルタイムで表示されます</li>
+                    </ul>
+                </div>
+
+                <div class="usage-step">
+                    <h3>🎮 Discordコマンドの使用</h3>
+                    <p>配信中に監視するチャンネルを動的に変更できます。</p>
+                    
+                    <h4>利用可能なコマンド</h4>
+                    <ul>
+                        <li><code>/add channel:#チャンネル名</code> - チャンネルを監視リストに追加</li>
+                        <li><code>/remove channel:#チャンネル名</code> - チャンネルを監視リストから削除</li>
+                        <li><code>/list</code> - 現在監視中のチャンネル一覧を表示</li>
+                    </ul>
+                    
+                    <h4>コマンドの実行例</h4>
+                    <pre><code># 雑談チャンネルを追加
+/add channel:#雑談
+
+# ゲームチャンネルを追加
+/add channel:#ゲーム
+
+# 現在の監視チャンネルを確認
+/list
+
+# 不要なチャンネルを削除
+/remove channel:#雑談</code></pre>
+                    
+                    <h4>権限について</h4>
+                    <p>これらのコマンドは以下の権限を持つユーザーのみ実行可能です：</p>
+                    <ul>
+                        <li>サーバー管理者</li>
+                        <li>チャンネル管理権限を持つユーザー</li>
+                    </ul>
+                </div>
+
+                <div class="usage-step">
+                    <h3>🎨 カスタマイズオプション</h3>
+                    <p>表示をより魅力的にするためのカスタマイズ方法です。</p>
+                    
+                    <h4>フォントの変更</h4>
+                    <ol>
+                        <li><code>fonts</code>フォルダにフォントファイルを配置</li>
+                        <li>アプリケーションを再起動</li>
+                        <li>新しいフォントが自動で適用されます</li>
+                    </ol>
+                    
+                    <h4>CSSのカスタマイズ</h4>
+                    <p>より高度なカスタマイズが必要な場合は、<code>index.html</code>内のCSSを編集できます。</p>
+                    <ul>
+                        <li>背景色の変更</li>
+                        <li>メッセージボックスのデザイン変更</li>
+                        <li>アニメーション効果の追加</li>
+                        <li>レスポンシブデザインの調整</li>
+                    </ul>
+                    
+                    <h4>設定ファイルの調整</h4>
+                    <p><code>config.yaml</code>で以下の設定を調整できます：</p>
+                    <ul>
+                        <li><code>history_limit</code>: 起動時に取得する過去メッセージ数</li>
+                        <li><code>max_messages</code>: メモリに保持する最大メッセージ数</li>
+                        <li><code>port</code>: WebSocketサーバーのポート番号</li>
+                    </ul>
+                </div>
+
+                <div class="usage-step">
+                    <h3>🔧 トラブルシューティング</h3>
+                    <p>よくある問題とその解決方法です。</p>
+                    
+                    <h4>接続できない場合</h4>
+                    <ul>
+                        <li>Discord Botのトークンが正しく設定されているか確認</li>
+                        <li>Botがサーバーに正しく招待されているか確認</li>
+                        <li>ファイアウォールでポート8765がブロックされていないか確認</li>
+                        <li>OBSのブラウザソースでローカルファイルが正しく指定されているか確認</li>
+                    </ul>
+                    
+                    <h4>メッセージが表示されない場合</h4>
+                    <ul>
+                        <li>監視対象のチャンネルが正しく設定されているか確認</li>
+                        <li>Botに必要な権限が付与されているか確認</li>
+                        <li>MESSAGE CONTENT INTENTが有効になっているか確認</li>
+                        <li>ログファイルでエラーメッセージを確認</li>
+                    </ul>
+                    
+                    <h4>パフォーマンスの問題</h4>
+                    <ul>
+                        <li><code>max_messages</code>の値を小さくする</li>
+                        <li><code>history_limit</code>の値を小さくする</li>
+                        <li>不要なチャンネルの監視を停止する</li>
+                    </ul>
+                </div>
+
+                <div class="usage-step">
+                    <h3>🛑 アプリケーションの停止</h3>
+                    <p>アプリケーションを安全に停止する方法です。</p>
+                    
+                    <h4>正常な停止方法</h4>
+                    <ol>
+                        <li>コマンドプロンプトウィンドウを選択</li>
+                        <li><code>Ctrl + C</code>を押す</li>
+                        <li>「⛔ 終了処理中...」と表示される</li>
+                        <li>「✅ アプリケーション終了」と表示されたら完了</li>
+                    </ol>
+                    
+                    <h4>強制終了</h4>
+                    <p>通常の方法で停止できない場合は、タスクマネージャーでプロセスを終了してください。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Discord Chat Viewer for OBS. MIT License.</p>
+        </div>
+    </footer>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ヘッダーのスクロール効果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

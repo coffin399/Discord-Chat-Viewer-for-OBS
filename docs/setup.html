@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>セットアップガイド - Discord Chat Viewer for OBS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo"><a href="index.html" style="text-decoration: none; color: inherit;">Discord Chat Viewer for OBS</a></h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">ホーム</a>
+                <a href="setup.html" class="nav-link">セットアップ</a>
+                <a href="usage.html" class="nav-link">使い方</a>
+                <a href="api.html" class="nav-link">技術仕様</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <h2 class="hero-title">セットアップガイド</h2>
+                <p class="hero-description">
+                    Discord Chat Viewer for OBSの詳細なセットアップ手順をご案内します。
+                    初回セットアップから実際の使用まで、ステップバイステップで説明します。
+                </p>
+            </div>
+        </section>
+
+        <section class="setup">
+            <div class="container">
+                <div class="setup-step">
+                    <h3>📋 必要なもの</h3>
+                    <p>このツールを使用するために、以下のものが必要です：</p>
+                    <ul>
+                        <li><strong>Python 3.8以上</strong> - <a href="https://www.python.org/downloads/" target="_blank">Python公式サイト</a>からダウンロード</li>
+                        <li><strong>Discordアカウント</strong> - 無料で作成可能</li>
+                        <li><strong>OBS Studio</strong> - <a href="https://obsproject.com/" target="_blank">OBS公式サイト</a>からダウンロード</li>
+                        <li><strong>Discordサーバー</strong> - 管理権限が必要</li>
+                    </ul>
+                </div>
+
+                <div class="setup-step">
+                    <h3>🤖 Discord Botの作成</h3>
+                    <p>このツールはDiscord Botを使用してメッセージを取得します。以下の手順でBotを作成してください。</p>
+                    
+                    <h4>1. Discord Developer Portalにアクセス</h4>
+                    <p><a href="https://discord.com/developers/applications" target="_blank">Discord Developer Portal</a>にアクセスし、Discordアカウントでログインします。</p>
+                    
+                    <h4>2. 新しいアプリケーションを作成</h4>
+                    <ol>
+                        <li><code>New Application</code>ボタンをクリック</li>
+                        <li>アプリケーション名を入力（例: "OBS Chat Bot"）</li>
+                        <li><code>Create</code>をクリック</li>
+                    </ol>
+                    
+                    <h4>3. Botを作成</h4>
+                    <ol>
+                        <li>左側のメニューから<code>Bot</code>を選択</li>
+                        <li><code>Add Bot</code>をクリック</li>
+                        <li>確認ダイアログで<code>Yes, do it!</code>をクリック</li>
+                    </ol>
+                    
+                    <h4>4. インテントの設定</h4>
+                    <p><strong>重要:</strong> 以下の設定を行わないとメッセージの内容を読み取れません。</p>
+                    <ol>
+                        <li>Botのページで<code>Privileged Gateway Intents</code>セクションを探す</li>
+                        <li><code>MESSAGE CONTENT INTENT</code>のトグルを<strong>オン</strong>にする</li>
+                        <li>変更を保存</li>
+                    </ol>
+                    
+                    <h4>5. Botトークンの取得</h4>
+                    <ol>
+                        <li>Botのページで<code>Token</code>セクションを探す</li>
+                        <li><code>Reset Token</code>または<code>View Token</code>をクリック</li>
+                        <li>表示されたトークンをコピー（後で使用します）</li>
+                        <li><strong>⚠️ このトークンは絶対に他人に教えたり、公開しないでください</strong></li>
+                    </ol>
+                </div>
+
+                <div class="setup-step">
+                    <h3>🔗 Botをサーバーに招待</h3>
+                    <p>作成したBotをDiscordサーバーに招待する必要があります。</p>
+                    
+                    <h4>1. OAuth2設定</h4>
+                    <ol>
+                        <li>左側のメニューから<code>OAuth2</code> → <code>URL Generator</code>を選択</li>
+                        <li><code>SCOPES</code>で以下の項目にチェック：
+                            <ul>
+                                <li><code>bot</code></li>
+                                <li><code>applications.commands</code></li>
+                            </ul>
+                        </li>
+                        <li><code>BOT PERMISSIONS</code>で以下の権限にチェック：
+                            <ul>
+                                <li><code>View Channels</code> (チャンネルを見る)</li>
+                                <li><code>Read Message History</code> (メッセージ履歴を読む)</li>
+                                <li><code>Send Messages</code> (メッセージを送信) ※推奨</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <h4>2. 招待URLの生成と実行</h4>
+                    <ol>
+                        <li>設定完了後、下部に<code>Generated URL</code>が表示される</li>
+                        <li>このURLをコピーしてブラウザで開く</li>
+                        <li>招待したいサーバーを選択</li>
+                        <li>権限を確認して<code>Authorize</code>をクリック</li>
+                    </ol>
+                </div>
+
+                <div class="setup-step">
+                    <h3>📝 チャンネルIDの取得</h3>
+                    <p>OBSに表示したいチャンネルのIDを取得する必要があります。</p>
+                    
+                    <h4>1. 開発者モードを有効化</h4>
+                    <ol>
+                        <li>Discordの設定（歯車アイコン）を開く</li>
+                        <li><code>詳細設定</code>を選択</li>
+                        <li><code>開発者モード</code>をオンにする</li>
+                    </ol>
+                    
+                    <h4>2. チャンネルIDをコピー</h4>
+                    <ol>
+                        <li>OBSに表示したいチャンネルを右クリック</li>
+                        <li><code>チャンネルIDをコピー</code>を選択</li>
+                        <li>コピーしたIDをメモしておく（後で設定ファイルで使用）</li>
+                    </ol>
+                </div>
+
+                <div class="setup-step">
+                    <h3>⚙️ 設定ファイルの編集</h3>
+                    <p>プロジェクトフォルダ内の<code>config.yaml</code>ファイルを編集します。</p>
+                    
+                    <h4>設定ファイルの例</h4>
+                    <pre><code># Discord Bot設定
+discord:
+  token: "YOUR_DISCORD_BOT_TOKEN_HERE"  # ここにBotトークンを貼り付け
+  # 初期監視チャンネルID（複数可）
+  channels:
+    - 123456789012345678  # チャンネルIDを貼り付け
+    - 987654321098765432  # 複数指定可能
+  # 起動時に取得する過去メッセージ数
+  history_limit: 50
+  # メモリに保持する最大メッセージ数
+  max_messages: 100
+
+# WebSocketサーバー設定
+websocket:
+  host: "0.0.0.0"
+  port: 8765
+
+# ログ設定
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR</code></pre>
+                    
+                    <h4>設定項目の説明</h4>
+                    <ul>
+                        <li><code>token</code>: Discord Botのトークン（必須）</li>
+                        <li><code>channels</code>: 監視するチャンネルのIDリスト</li>
+                        <li><code>history_limit</code>: 起動時に取得する過去メッセージ数</li>
+                        <li><code>max_messages</code>: メモリに保持する最大メッセージ数</li>
+                        <li><code>port</code>: WebSocketサーバーのポート番号</li>
+                    </ul>
+                </div>
+
+                <div class="setup-step">
+                    <h3>🎨 フォントの設定（任意）</h3>
+                    <p>チャットの表示フォントをカスタマイズできます。</p>
+                    
+                    <h4>1. フォルダの準備</h4>
+                    <ol>
+                        <li>プロジェクトフォルダに<code>fonts</code>フォルダを作成</li>
+                        <li>フォルダが存在しない場合は、プログラムが自動で作成します</li>
+                    </ol>
+                    
+                    <h4>2. フォントファイルの配置</h4>
+                    <ol>
+                        <li>お好きなフォントファイル（<code>.ttf</code>, <code>.otf</code>など）を<code>fonts</code>フォルダに配置</li>
+                        <li>複数のフォントファイルを配置可能</li>
+                        <li>プログラム起動時に自動で読み込まれます</li>
+                    </ol>
+                    
+                    <h4>3. フォントの取得</h4>
+                    <p>無料フォントは以下のサイトからダウンロードできます：</p>
+                    <ul>
+                        <li><a href="https://fonts.google.com/" target="_blank">Google Fonts</a></li>
+                        <li><a href="https://www.dafont.com/" target="_blank">DaFont</a></li>
+                        <li><a href="https://www.fontspace.com/" target="_blank">FontSpace</a></li>
+                    </ul>
+                </div>
+
+                <div class="setup-step">
+                    <h3>✅ セットアップ完了</h3>
+                    <p>これで基本的なセットアップは完了です。次は実際の使用方法を確認してください。</p>
+                    
+                    <div class="hero-buttons">
+                        <a href="usage.html" class="btn btn-primary">使用方法を見る</a>
+                        <a href="index.html" class="btn btn-secondary">ホームに戻る</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Discord Chat Viewer for OBS. MIT License.</p>
+        </div>
+    </footer>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ヘッダーのスクロール効果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>
