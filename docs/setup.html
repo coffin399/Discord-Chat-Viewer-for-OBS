@@ -3,9 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>セットアップガイド - Discord Chat Viewer for OBS</title>
+    <title>セットアップガイド - Discord Chat Viewer for OBS | 詳細な設定手順</title>
+    <meta name="description" content="Discord Chat Viewer for OBSの詳細なセットアップガイド。Discord Botの作成から設定ファイルの編集、フォント設定まで、ステップバイステップで解説。配信者必見の完全セットアップ手順。">
+    <meta name="keywords" content="Discord, OBS, セットアップ, 設定, Bot作成, 配信, チャット表示, 設定手順, ガイド, 初心者向け">
+    <meta name="author" content="Discord Chat Viewer for OBS">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/setup.html">
+    <meta property="og:title" content="セットアップガイド - Discord Chat Viewer for OBS">
+    <meta property="og:description" content="Discord Chat Viewer for OBSの詳細なセットアップガイド。Discord Botの作成から設定まで、ステップバイステップで解説。">
+    <meta property="og:image" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/setup.html">
+    <meta property="twitter:title" content="セットアップガイド - Discord Chat Viewer for OBS">
+    <meta property="twitter:description" content="Discord Chat Viewer for OBSの詳細なセットアップガイド。Discord Botの作成から設定まで、ステップバイステップで解説。">
+    <meta property="twitter:image" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/og-image.jpg">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/setup.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "Discord Chat Viewer for OBS セットアップガイド",
+        "description": "Discord Chat Viewer for OBSの詳細なセットアップガイド。Discord Botの作成から設定ファイルの編集まで、ステップバイステップで解説。",
+        "url": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/setup.html",
+        "image": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/og-image.jpg",
+        "totalTime": "PT30M",
+        "estimatedCost": {
+            "@type": "MonetaryAmount",
+            "currency": "JPY",
+            "value": "0"
+        },
+        "supply": [
+            {
+                "@type": "HowToSupply",
+                "name": "Python 3.8以上"
+            },
+            {
+                "@type": "HowToSupply", 
+                "name": "Discordアカウント"
+            },
+            {
+                "@type": "HowToSupply",
+                "name": "OBS Studio"
+            }
+        ],
+        "step": [
+            {
+                "@type": "HowToStep",
+                "name": "必要なものの準備",
+                "text": "Python 3.8以上、Discordアカウント、OBS Studioを準備します。"
+            },
+            {
+                "@type": "HowToStep",
+                "name": "Discord Botの作成",
+                "text": "Discord Developer PortalでBotを作成し、必要な権限を設定します。"
+            },
+            {
+                "@type": "HowToStep",
+                "name": "Botをサーバーに招待",
+                "text": "作成したBotをDiscordサーバーに招待し、必要な権限を付与します。"
+            },
+            {
+                "@type": "HowToStep",
+                "name": "設定ファイルの編集",
+                "text": "config.yamlファイルを編集して、BotトークンとチャンネルIDを設定します。"
+            }
+        ],
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "ホーム",
+                    "item": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "ドキュメント",
+                    "item": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "セットアップガイド",
+                    "item": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/setup.html"
+                }
+            ]
+        }
+    }
+    </script>
 </head>
 <body>
     <header class="header">

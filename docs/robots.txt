@@ -1,0 +1,47 @@
+# Discord Chat Viewer for OBS - Robots.txt
+# 最終更新: 2025年10月26日
+
+# 全クローラーに対する指示
+User-agent: *
+
+# 許可するページ
+Allow: /
+Allow: /docs/
+Allow: /docs/index.html
+Allow: /docs/setup.html
+Allow: /docs/usage.html
+Allow: /docs/api.html
+Allow: /docs/styles.css
+Allow: /docs/README.md
+
+# 禁止するページ・ディレクトリ
+Disallow: /fonts/
+Disallow: /src/
+Disallow: /docs/404.html
+Disallow: /*.py
+Disallow: /*.yaml
+Disallow: /*.bat
+Disallow: /*.txt
+Disallow: /config.yaml
+Disallow: /requirements.txt
+Disallow: /start.bat
+
+# サイトマップの場所
+Sitemap: https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/sitemap.xml
+Sitemap: https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/sitemap.xml
+
+# クロール遅延（サーバー負荷軽減）
+Crawl-delay: 1
+
+# 特定のボットに対する特別な指示
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2

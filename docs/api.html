@@ -3,9 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>技術仕様 - Discord Chat Viewer for OBS</title>
+    <title>技術仕様 - Discord Chat Viewer for OBS | API仕様・アーキテクチャ</title>
+    <meta name="description" content="Discord Chat Viewer for OBSの技術仕様・API仕様・アーキテクチャの詳細解説。WebSocket API、設定ファイル、依存関係、開発者向け情報を網羅した技術ドキュメント。">
+    <meta name="keywords" content="Discord, OBS, 技術仕様, API, WebSocket, アーキテクチャ, 開発者, ドキュメント, 設定, 依存関係, プログラミング">
+    <meta name="author" content="Discord Chat Viewer for OBS">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/api.html">
+    <meta property="og:title" content="技術仕様 - Discord Chat Viewer for OBS">
+    <meta property="og:description" content="Discord Chat Viewer for OBSの技術仕様・API仕様・アーキテクチャの詳細解説。WebSocket API、設定ファイル、依存関係、開発者向け情報を網羅。">
+    <meta property="og:image" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/api.html">
+    <meta property="twitter:title" content="技術仕様 - Discord Chat Viewer for OBS">
+    <meta property="twitter:description" content="Discord Chat Viewer for OBSの技術仕様・API仕様・アーキテクチャの詳細解説。WebSocket API、設定ファイル、依存関係、開発者向け情報を網羅。">
+    <meta property="twitter:image" content="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/og-image.jpg">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/api.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "name": "Discord Chat Viewer for OBS 技術仕様",
+        "description": "Discord Chat Viewer for OBSの技術仕様・API仕様・アーキテクチャの詳細解説。WebSocket API、設定ファイル、依存関係、開発者向け情報を網羅した技術ドキュメント。",
+        "url": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/api.html",
+        "image": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/og-image.jpg",
+        "author": {
+            "@type": "Organization",
+            "name": "Discord Chat Viewer for OBS"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Discord Chat Viewer for OBS"
+        },
+        "datePublished": "2024-01-01",
+        "dateModified": "2024-10-26",
+        "mainEntity": {
+            "@type": "SoftwareApplication",
+            "name": "Discord Chat Viewer for OBS",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Windows, macOS, Linux",
+            "programmingLanguage": "Python",
+            "description": "配信者向けDiscord連携ツール。OBSでDiscordチャットをリアルタイム表示",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "JPY"
+            }
+        },
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "ホーム",
+                    "item": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "ドキュメント",
+                    "item": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "技術仕様",
+                    "item": "https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/docs/api.html"
+                }
+            ]
+        }
+    }
+    </script>
 </head>
 <body>
     <header class="header">
