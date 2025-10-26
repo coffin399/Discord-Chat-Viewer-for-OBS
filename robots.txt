@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://discord-chat-viewer-obs.com/sitemap.xml
+Sitemap: https://coffin399.github.io/Discord-Chat-Viewer-for-OBS/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1
